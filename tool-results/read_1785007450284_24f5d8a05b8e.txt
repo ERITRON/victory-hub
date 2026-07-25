@@ -1,0 +1,746 @@
+     1→/**
+     2→ * ProjectStatus.jsx
+     3→ *
+     4→ * A transparent, honest component that communicates:
+     5→ *   1. The PROBLEM Victory Hub solves for Ethiopian Grade 12 students
+     6→ *   2. CURRENT LIMITATIONS (no backend, no accounts, no AI, etc.)
+     7→ *   3. WHAT WORKS right now (functional features)
+     8→ *   4. FUTURE VISION (planned features)
+     9→ *
+    10→ * Designed with a warm educational palette (blue, gold, green),
+    11→ * responsive grid layout, subtle animations, and professional styling.
+    12→ *
+    13→ * Props:
+    14→ *   showLimitations (boolean) — show/hide the Limitations section (default: true)
+    15→ *   showVision     (boolean) — show/hide the Future Vision section (default: true)
+    16→ *   className       (string)  — additional CSS classes on the wrapper
+    17→ *
+    18→ * Built with ❤️ by a Grade 11 Student
+    19→ */
+    20→
+    21→'use client';
+    22→
+    23→import { useMemo } from 'react';
+    24→import { motion } from 'framer-motion';
+    25→import {
+    26→  /* Problem icons */
+    27→  Puzzle,
+    28→  ListOrdered,
+    29→  BarChart3,
+    30→  Timer,
+    31→  Link2,
+    32→  /* Limitation icons */
+    33→  Database,
+    34→  UserX,
+    35→  BotOff,
+    36→  CloudOff,
+    37→  Hash,
+    38→  Keyboard,
+    39→  User,
+    40→  /* Works icons */
+    41→  CheckCircle2,
+    42→  /* Vision icons */
+    43→  Lock,
+    44→  LineChart,
+    45→  Sparkles,
+    46→  Smartphone,
+    47→  Users,
+    48→  Download,
+    49→  PenTool,
+    50→  /* Misc */
+    51→  AlertTriangle,
+    52→  Info,
+    53→  Target,
+    54→  Flame,
+    55→  Calendar,
+    56→  Clock,
+    57→  Heart,
+    58→  ShieldCheck,
+    59→  ArrowRight,
+    60→  ExternalLink,
+    61→} from 'lucide-react';
+    62→
+    63→/* ==================================================================
+    64→   ANIMATION VARIANTS
+    65→   ================================================================== */
+    66→
+    67→/** Stagger container */
+    68→const staggerContainer = {
+    69→  hidden: {},
+    70→  visible: {
+    71→    transition: { staggerChildren: 0.07 },
+    72→  },
+    73→};
+    74→
+    75→/** Individual card fade-up */
+    76→const cardVariant = {
+    77→  hidden: { opacity: 0, y: 24 },
+    78→  visible: {
+    79→    opacity: 1,
+    80→    y: 0,
+    81→    transition: { duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] },
+    82→  },
+    83→};
+    84→
+    85→/** Section heading fade */
+    86→const headingVariant = {
+    87→  hidden: { opacity: 0, y: 16 },
+    88→  visible: {
+    89→    opacity: 1,
+    90→    y: 0,
+    91→    transition: { duration: 0.5, ease: 'easeOut' },
+    92→  },
+    93→};
+    94→
+    95→/* ==================================================================
+    96→   PROBLEM DATA
+    97→   ================================================================== */
+    98→
+    99→const PROBLEMS = [
+   100→  {
+   101→    icon: Puzzle,
+   102→    title: 'Fragmented Study Resources',
+   103→    description:
+   104→      'Students have textbooks from Grades 9–12 but don&rsquo;t know how to connect topics across years. The Ethiopian national exam covers ALL four years — 30% from Grades 9–10 and 70% from Grades 11–12.',
+   105→    color: 'from-blue-500 to-blue-600',
+   106→    accentColor: 'text-blue-500',
+   107→    bgAccent: 'bg-blue-500/10',
+   108→  },
+   109→  {
+   110→    icon: ListOrdered,
+   111→    title: 'No Systematic Study Method',
+   112→    description:
+   113→      'Most students cram before the exam without a structured approach. Victory Hub implements the "Chapter Link" method (connecting Grade 12 topics to their Grade 9–11 foundations) and the "Pyramid" method (20% time on Grades 9–10, 30% on Grade 11, 50% on Grade 12).',
+   114→    color: 'from-amber-500 to-amber-600',
+   115→    accentColor: 'text-amber-500',
+   116→    bgAccent: 'bg-amber-500/10',
+   117→  },
+   118→  {
+   119→    icon: BarChart3,
+   120→    title: 'No Progress Tracking',
+   121→    description:
+   122→      `Students don&rsquo;t track daily study habits, mock exam scores, or mistakes. Victory Hub provides daily missions, streak tracking, score logging, and mistake logging to build accountability.`,
+   123→    color: 'from-emerald-500 to-emerald-600',
+   124→    accentColor: 'text-emerald-500',
+   125→    bgAccent: 'bg-emerald-500/10',
+   126→  },
+   127→  {
+   128→    icon: Timer,
+   129→    title: 'Poor Time Management',
+   130→    description:
+   131→      `Students don&rsquo;t use structured study sessions. Victory Hub includes a Pyramid Timer with 50/30/20 minute presets that mirror the recommended study time distribution.`,
+   132→    color: 'from-rose-500 to-rose-600',
+   133→    accentColor: 'text-rose-500',
+   134→    bgAccent: 'bg-rose-500/10',
+   135→  },
+   136→  {
+   137→    icon: Link2,
+   138→    title: 'No Personalized Library',
+   139→    description:
+   140→      `Students can&rsquo;t easily see how topics connect across grades. Victory Hub has a Book &amp; Chapter Link Tracker where users manually add textbooks and create cross-grade connections.`,
+   141→    color: 'from-violet-500 to-violet-600',
+   142→    accentColor: 'text-violet-500',
+   143→    bgAccent: 'bg-violet-500/10',
+   144→  },
+   145→];
+   146→
+   147→/* ==================================================================
+   148→   LIMITATIONS DATA
+   149→   ================================================================== */
+   150→
+   151→const LIMITATIONS = [
+   152→  {
+   153→    icon: Database,
+   154→    title: 'No Backend / Database',
+   155→    description:
+   156→      `All data is stored in the browser&rsquo;s localStorage. Clearing cache or using a different device erases all progress.`,
+   157→    severity: 'high',
+   158→  },
+   159→  {
+   160→    icon: UserX,
+   161→    title: 'No User Accounts',
+   162→    description:
+   163→      'No login system exists. Every visitor sees the same data. You cannot save or transfer work across devices.',
+   164→    severity: 'high',
+   165→  },
+   166→  {
+   167→    icon: BotOff,
+   168→    title: 'No AI or Automation',
+   169→    description:
+   170→      `The AI Assistant in the app is a local pattern-matching demo — NOT a real AI. All chapter linking and tracking must be done manually.`,
+   171→    severity: 'high',
+   172→  },
+   173→  {
+   174→    icon: CloudOff,
+   175→    title: 'No Cloud Sync',
+   176→    description:
+   177→      'Data stays only on the device being used. There is no cloud backup or synchronization.',
+   178→    severity: 'medium',
+   179→  },
+   180→  {
+   181→    icon: Hash,
+   182→    title: 'Static Demo Numbers',
+   183→    description:
+   184→      `Statistics like &ldquo;9 Subjects, 150+ Lessons&rdquo; on the home page are placeholders and do not update dynamically based on real data.`,
+   185→    severity: 'low',
+   186→  },
+   187→  {
+   188→    icon: Keyboard,
+   189→    title: 'Manual Input Only',
+   190→    description:
+   191→      'Users must add every book, chapter link, score, and mistake themselves. There is no automatic import or smart suggestions.',
+   192→    severity: 'medium',
+   193→  },
+   194→  {
+   195→    icon: User,
+   196→    title: 'Single User Only',
+   197→    description:
+   198→      'Designed as a personal study tool, not a multi-user platform. Only one person can use each browser instance.',
+   199→    severity: 'low',
+   200→  },
+   201→];
+   202→
+   203→/* ==================================================================
+   204→   WHAT WORKS DATA
+   205→   ================================================================== */
+   206→
+   207→const WORKING_FEATURES = [
+   208→  {
+   209→    icon: Target,
+   210→    title: 'Daily Missions',
+   211→    description: 'Add, complete, and delete daily study tasks',
+   212→  },
+   213→  {
+   214→    icon: Timer,
+   215→    title: 'Pyramid Timer',
+   216→    description: '50 / 30 / 20 minute presets with start, pause, and reset',
+   217→  },
+   218→  {
+   219→    icon: Link2,
+   220→    title: 'Book & Chapter Link Tracker',
+   221→    description: 'Manually add textbooks and create cross-grade links',
+   222→  },
+   223→  {
+   224→    icon: Flame,
+   225→    title: 'Streak Counter',
+   226→    description: 'Tracks consecutive study days to build consistency',
+   227→  },
+   228→  {
+   229→    icon: BarChart3,
+   230→    title: 'Score Tracker',
+   231→    description: 'Log and review mock exam scores over time',
+   232→  },
+   233→  {
+   234→    icon: AlertTriangle,
+   235→    title: 'Mistake Log',
+   236→    description: 'Record mistakes and review them before the exam',
+   237→  },
+   238→  {
+   239→    icon: ShieldCheck,
+   240→    title: 'Local Data Persistence',
+   241→    description: 'All data saves automatically in browser localStorage',
+   242→  },
+   243→];
+   244→
+   245→/* ==================================================================
+   246→   FUTURE VISION DATA
+   247→   ================================================================== */
+   248→
+   249→const FUTURE_FEATURES = [
+   250→  {
+   251→    icon: Lock,
+   252→    title: 'User Accounts & Cloud Sync',
+   253→    description: 'Login system with data that follows you across devices',
+   254→    color: 'from-blue-500 to-cyan-500',
+   255→  },
+   256→  {
+   257→    icon: LineChart,
+   258→    title: 'Interactive Progress Charts',
+   259→    description: 'Dynamic analytics that update with real study data',
+   260→    color: 'from-emerald-500 to-teal-500',
+   261→  },
+   262→  {
+   263→    icon: Sparkles,
+   264→    title: 'AI-Powered Chapter Links',
+   265→    description: 'Automatic suggestions for connecting topics across grades',
+   266→    color: 'from-violet-500 to-purple-500',
+   267→  },
+   268→  {
+   269→    icon: Smartphone,
+   270→    title: 'Mobile App Version',
+   271→    description: 'Native Android/iOS app for studying on the go',
+   272→    color: 'from-amber-500 to-orange-500',
+   273→  },
+   274→  {
+   275→    icon: Users,
+   276→    title: 'Shared Library',
+   277→    description: 'Collaborate and share chapter links with classmates',
+   278→    color: 'from-rose-500 to-pink-500',
+   279→  },
+   280→  {
+   281→    icon: Download,
+   282→    title: 'Export / Import Backup',
+   283→    description: 'Backup your data and restore it on any device',
+   284→    color: 'from-sky-500 to-blue-500',
+   285→  },
+   286→  {
+   287→    icon: PenTool,
+   288→    title: 'Automated Quiz Generator',
+   289→    description: 'Generate practice quizzes from your recorded mistakes',
+   290→    color: 'from-emerald-500 to-green-500',
+   291→  },
+   292→];
+   293→
+   294→/* ==================================================================
+   295→   SEVERITY BADGE HELPER
+   296→   ================================================================== */
+   297→
+   298→function SeverityBadge({ severity }: { severity: string }) {
+   299→  const config = {
+   300→    high: { label: 'High Impact', className: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/20' },
+   301→    medium: { label: 'Medium Impact', className: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20' },
+   302→    low: { label: 'Low Impact', className: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' },
+   303→  };
+   304→  const c = config[severity] || config.low;
+   305→  return (
+   306→    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${c.className}`}>
+   307→      {c.label}
+   308→    </span>
+   309→  );
+   310→}
+   311→
+   312→/* ==================================================================
+   313→   SUB-COMPONENT: PROBLEM SECTION
+   314→   ================================================================== */
+   315→
+   316→function ProblemSection() {
+   317→  return (
+   318→    <section>
+   319→      {/* Section heading */
+   320→      <motion.div
+   321→        initial="hidden"
+   322→        whileInView="visible"
+   323→        viewport={{ once: true, margin: '-40px' }}
+   324→        variants={headingVariant}
+   325→        className="mb-8"
+   326→      >
+   327→        <div className="flex items-center gap-3 mb-2">
+   328→          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25">
+   329→            <Info className="h-5 w-5" />
+   330→          </div>
+   331→          <div>
+   332→            <h2 className="text-2xl md:text-3xl font-bold">
+   333→              The{' '}
+   334→              <span className="bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent">
+   335→                Problem
+   336→              </span>{' '}
+   337→              We Solve
+   338→            </h2>
+   339→            <p className="text-sm text-muted-foreground">
+   340→              Challenges facing Ethiopian Grade 12 students preparing for the national exam
+   341→            </p>
+   342→          </div>
+   343→        </div>
+   344→      </motion.div>
+   345→
+   346→      {/* Problem cards */}
+   347→      <motion.div
+   348→        initial="hidden"
+   349→        whileInView="visible"
+   350→        viewport={{ once: true, margin: '-40px' }}
+   351→        variants={staggerContainer}
+   352→        className="grid gap-5 sm:grid-cols-2"
+   353→      >
+   354→        {PROBLEMS.map((problem, index) => {
+   355→          const Icon = problem.icon;
+   356→          return (
+   357→            <motion.div
+   358→              key={problem.title}
+   359→              variants={cardVariant}
+   360→              className={
+   361→                index === PROBLEMS.length - 1 && PROBLEMS.length % 2 !== 0
+   362→                  ? 'sm:col-span-2'
+   363→                  : ''
+   364→              }
+   365→            >
+   366→              <div className="group relative h-full rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+   367→                {/* Accent bar at top */}
+   368→                <div className={`absolute left-6 top-0 h-1 w-12 rounded-b-full bg-gradient-to-r ${problem.color}`} />
+   369→
+   370→                <div className="flex items-start gap-4">
+   371→                  {/* Icon */}
+   372→                  <div
+   373→                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${problem.color} text-white shadow-md`}
+   374→                  >
+   375→                    <Icon className="h-5 w-5" />
+   376→                  </div>
+   377→
+   378→                  <div className="flex-1 min-w-0">
+   379→                    <h3 className="text-base font-semibold mb-1.5">{problem.title}</h3>
+   380→                    <p className="text-sm text-muted-foreground leading-relaxed">
+   381→                      {problem.description}
+   382→                    </p>
+   383→                  </div>
+   384→                </div>
+   385→              </div>
+   386→            </motion.div>
+   387→          );
+   388→        })}
+   389→      </motion.div>
+   390→    </section>
+   391→  );
+   392→}
+   393→
+   394→/* ==================================================================
+   395→   SUB-COMPONENT: LIMITATIONS SECTION
+   396→   ================================================================== */
+   397→
+   398→function LimitationsSection() {
+   399→  return (
+   400→    <section>
+   401→      {/* Section heading */}
+   402→      <motion.div
+   403→        initial="hidden"
+   404→        whileInView="visible"
+   405→        viewport={{ once: true, margin: '-40px' }}
+   406→        variants={headingVariant}
+   407→        className="mb-8"
+   408→      >
+   409→        <div className="flex items-center gap-3 mb-2">
+   410→          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25">
+   411→            <AlertTriangle className="h-5 w-5" />
+   412→          </div>
+   413→          <div>
+   414→            <h2 className="text-2xl md:text-3xl font-bold">
+   415→              Current{' '}
+   416→              <span className="bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent">
+   417→                Limitations
+   418→              </span>
+   419→            </h2>
+   420→            <p className="text-sm text-muted-foreground">
+   421→              Being honest about what Victory Hub cannot do — yet
+   422→            </p>
+   423→          </div>
+   424→        </div>
+   425→
+   426→        {/* Transparency notice */}
+   427→        <div className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+   428→          <div className="flex gap-3">
+   429→            <AlertTriangle className="h-5 w-5 shrink-0 text-amber-500 mt-0.5" />
+   430→            <p className="text-sm text-muted-foreground leading-relaxed">
+   431→              <strong className="text-foreground">Transparency matters.</strong> Victory Hub
+   432→              is a student project, not a commercial product. Below are the current
+   433→              limitations so you know exactly what you&rsquo;re getting. No false promises.
+   434→            </p>
+   435→          </div>
+   436→        </div>
+   437→      </motion.div>
+   438→
+   439→      {/* Limitation cards */}
+   440→      <motion.div
+   441→        initial="hidden"
+   442→        whileInView="visible"
+   443→        viewport={{ once: true, margin: '-40px' }}
+   444→        variants={staggerContainer}
+   445→        className="grid gap-4 sm:grid-cols-2"
+   446→      >
+   447→        {LIMITATIONS.map((item) => {
+   448→          const Icon = item.icon;
+   449→          return (
+   450→            <motion.div key={item.title} variants={cardVariant}>
+   451→              <div className="group relative h-full rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl p-5 transition-all duration-300 hover:shadow-md">
+   452→                <div className="flex items-start gap-3.5">
+   453→                  {/* Icon */}
+   454→                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground transition-colors group-hover:bg-amber-500/10 group-hover:text-amber-500">
+   455→                    <Icon className="h-5 w-5" />
+   456→                  </div>
+   457→
+   458→                  <div className="flex-1 min-w-0">
+   459→                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+   460→                      <h3 className="text-sm font-semibold">{item.title}</h3>
+   461→                      <SeverityBadge severity={item.severity} />
+   462→                    </div>
+   463→                    <p className="text-xs text-muted-foreground leading-relaxed">
+   464→                      {item.description}
+   465→                    </p>
+   466→                  </div>
+   467→                </div>
+   468→              </div>
+   469→            </motion.div>
+   470→          );
+   471→        })}
+   472→      </motion.div>
+   473→    </section>
+   474→  );
+   475→}
+   476→
+   477→/* ==================================================================
+   478→   SUB-COMPONENT: WHAT WORKS SECTION
+   479→   ================================================================== */
+   480→
+   481→function WorksSection() {
+   482→  return (
+   483→    <section>
+   484→      {/* Section heading */}
+   485→      <motion.div
+   486→        initial="hidden"
+   487→        whileInView="visible"
+   488→        viewport={{ once: true, margin: '-40px' }}
+   489→        variants={headingVariant}
+   490→        className="mb-8"
+   491→      >
+   492→        <div className="flex items-center gap-3 mb-2">
+   493→          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25">
+   494→            <CheckCircle2 className="h-5 w-5" />
+   495→          </div>
+   496→          <div>
+   497→            <h2 className="text-2xl md:text-3xl font-bold">
+   498→              What{' '}
+   499→              <span className="bg-gradient-to-r from-emerald-500 to-emerald-600 bg-clip-text text-transparent">
+   500→                Works
+   501→              </span>{' '}
+   502→              Right Now
+   503→            </h2>
+   504→            <p className="text-sm text-muted-foreground">
+   505→              Features that are fully functional and ready to use today
+   506→            </p>
+   507→          </div>
+   508→        </div>
+   509→      </motion.div>
+   510→
+   511→      {/* Feature list */}
+   512→      <motion.div
+   513→        initial="hidden"
+   514→        whileInView="visible"
+   515→        viewport={{ once: true, margin: '-40px' }}
+   516→        variants={staggerContainer}
+   517→        className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 backdrop-blur-xl overflow-hidden"
+   518→      >
+   519→        {WORKING_FEATURES.map((feature, index) => {
+   520→          const Icon = feature.icon;
+   521→          const isLast = index === WORKING_FEATURES.length - 1;
+   522→          return (
+   523→            <motion.div
+   524→              key={feature.title}
+   525→              variants={cardVariant}
+   526→              className={`flex items-center gap-4 p-5 transition-colors hover:bg-emerald-500/5 ${
+   527→                !isLast ? 'border-b border-border/30' : ''
+   528→              }`}
+   529→            >
+   530→              {/* Green checkmark */}
+   531→              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/15">
+   532→                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+   533→              </div>
+   534→
+   535→              {/* Feature details */}
+   536→              <div className="flex-1 min-w-0">
+   537→                <div className="flex items-center gap-2">
+   538→                  <Icon className="h-4 w-4 text-emerald-500" />
+   539→                  <h3 className="text-sm font-semibold">{feature.title}</h3>
+   540→                </div>
+   541→                <p className="text-xs text-muted-foreground mt-0.5 ml-6">
+   542→                  {feature.description}
+   543→                </p>
+   544→              </div>
+   545→
+   546→              {/* Status badge */}
+   547→              <span className="hidden sm:inline-flex items-center rounded-full bg-emerald-500/15 px-3 py-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+   548→                Working
+   549→              </span>
+   550→            </motion.div>
+   551→          );
+   552→        })}
+   553→      </motion.div>
+   554→    </section>
+   555→  );
+   556→}
+   557→
+   558→/* ==================================================================
+   559→   SUB-COMPONENT: FUTURE VISION SECTION
+   560→   ================================================================== */
+   561→
+   562→function VisionSection() {
+   563→  return (
+   564→    <section>
+   565→      {/* Section heading */}
+   566→      <motion.div
+   567→        initial="hidden"
+   568→        whileInView="visible"
+   569→        viewport={{ once: true, margin: '-40px' }}
+   570→        variants={headingVariant}
+   571→        className="mb-8"
+   572→      >
+   573→        <div className="flex items-center gap-3 mb-2">
+   574→          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-lg shadow-violet-500/25">
+   575→            <Sparkles className="h-5 w-5" />
+   576→          </div>
+   577→          <div>
+   578→            <h2 className="text-2xl md:text-3xl font-bold">
+   579→              Future{' '}
+   580→              <span className="bg-gradient-to-r from-violet-500 to-purple-600 bg-clip-text text-transparent">
+   581→                Vision
+   582→              </span>
+   583→            </h2>
+   584→            <p className="text-sm text-muted-foreground">
+   585→              Features planned for upcoming versions of Victory Hub
+   586→            </p>
+   587→          </div>
+   588→        </div>
+   589→      </motion.div>
+   590→
+   591→      {/* Vision cards */}
+   592→      <motion.div
+   593→        initial="hidden"
+   594→        whileInView="visible"
+   595→        viewport={{ once: true, margin: '-40px' }}
+   596→        variants={staggerContainer}
+   597→        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+   598→      >
+   599→        {FUTURE_FEATURES.map((feature) => {
+   600→          const Icon = feature.icon;
+   601→          return (
+   602→            <motion.div key={feature.title} variants={cardVariant}>
+   603→              <div className="group relative h-full rounded-2xl border border-border/50 bg-card/60 backdrop-blur-xl p-5 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+   604→                {/* Gradient accent line */}
+   605→                <div className={`absolute left-5 top-0 h-1 w-10 rounded-b-full bg-gradient-to-r ${feature.color}`} />
+   606→
+   607→                <div className="flex items-start gap-3.5">
+   608→                  {/* Icon with gradient bg */}
+   609→                  <div
+   610→                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${feature.color} text-white shadow-md`}
+   611→                  >
+   612→                    <Icon className="h-4.5 w-4.5" />
+   613→                  </div>
+   614→
+   615→                  <div className="flex-1 min-w-0">
+   616→                    <h3 className="text-sm font-semibold mb-1">{feature.title}</h3>
+   617→                    <p className="text-xs text-muted-foreground leading-relaxed">
+   618→                      {feature.description}
+   619→                    </p>
+   620→                  </div>
+   621→                </div>
+   622→
+   623→                {/* "Planned" badge */}
+   624→                <div className="mt-3 ml-[54px]">
+   625→                  <span className="inline-flex items-center gap-1 rounded-full bg-violet-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-violet-500">
+   626→                    <Sparkles className="h-2.5 w-2.5" />
+   627→                    Planned
+   628→                  </span>
+   629→                </div>
+   630→              </div>
+   631→            </motion.div>
+   632→          );
+   633→        })}
+   634→      </motion.div>
+   635→    </section>
+   636→  );
+   637→}
+   638→
+   639→/* ==================================================================
+   640→   SUB-COMPONENT: STATUS FOOTER
+   641→   ================================================================== */
+   642→
+   643→function StatusFooter() {
+   644→  /* Auto-updating "Last Updated" date */
+   645→  const lastUpdated = useMemo(() => {
+   646→    return new Date().toLocaleDateString('en-US', {
+   647→      year: 'numeric',
+   648→      month: 'long',
+   649→      day: 'numeric',
+   650→    });
+   651→  }, []);
+   652→
+   653→  return (
+   654→    <motion.footer
+   655→      initial={{ opacity: 0 }}
+   656→      whileInView={{ opacity: 1 }}
+   657→      viewport={{ once: true }}
+   658→      transition={{ duration: 0.6 }}
+   659→      className="mt-16"
+   660→    >
+   661→      <div className="rounded-2xl border border-border/50 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl p-8 text-center">
+   662→        {/* Student builder credit */}
+   663→        <div className="mb-6">
+   664→          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 text-white shadow-xl shadow-orange-500/20">
+   665→            <Heart className="h-8 w-8" />
+   666→          </div>
+   667→          <h3 className="text-xl font-bold mb-2">
+   668→            Built with{' '}
+   669→            <Heart className="inline h-5 w-5 text-rose-500 fill-rose-500" />{' '}
+   670→            by a Grade 11 Student
+   671→          </h3>
+   672→          <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
+   673→            Victory Hub is a personal project born from the real challenges of
+   674→            preparing for the Ethiopian national exam. It&rsquo;s not perfect — but
+   675→            it&rsquo;s honest, it&rsquo;s useful, and it&rsquo;s constantly improving.
+   676→          </p>
+   677→        </div>
+   678→
+   679→        {/* Status badges */}
+   680→        <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+   681→          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+   682→            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+   683→            Actively Developed
+   684→          </span>
+   685→          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+   686→            <Calendar className="h-3 w-3" />
+   687→            Student Project
+   688→          </span>
+   689→          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400">
+   690→            <Clock className="h-3 w-3" />
+   691→            Work in Progress
+   692→          </span>
+   693→        </div>
+   694→
+   695→        {/* Divider */}
+   696→        <div className="border-t border-border/50 pt-4">
+   697→          <p className="text-xs text-muted-foreground">
+   698→            Last updated: <strong className="text-foreground">{lastUpdated}</strong>{' '}
+   699→            &middot; This is a transparent project status page &middot; No false
+   700→            claims, no hidden limitations
+   701→          </p>
+   702→        </div>
+   703→      </div>
+   704→    </motion.footer>
+   705→  );
+   706→}
+   707→
+   708→/* ==================================================================
+   709→   MAIN COMPONENT: ProjectStatus
+   710→   ================================================================== */
+   711→
+   712→/**
+   713→ * ProjectStatus — A transparent status component for Victory Hub.
+   714→ *
+   715→ * @param {Object} props
+   716→ * @param {boolean} props.showLimitations — Show/hide the Limitations section (default: true)
+   717→ * @param {boolean} props.showVision     — Show/hide the Future Vision section (default: true)
+   718→ * @param {string}  props.className      — Additional CSS classes on the root wrapper
+   719→ */
+   720→export default function ProjectStatus({
+   721→  showLimitations = true,
+   722→  showVision = true,
+   723→  className = '',
+   724→}) {
+   725→  return (
+   726→    <div className={`space-y-14 ${className}`}>
+   727→      {/* ---- Problem Section ---- */}
+   728→      <ProblemSection />
+   729→
+   730→      {/* ---- What Works Section (always visible) ---- */}
+   731→      <WorksSection />
+   732→
+   733→      {/* ---- Limitations Section (optional) ---- */}
+   734→      {showLimitations && <LimitationsSection />}
+   735→
+   736→      {/* ---- Future Vision Section (optional) ---- */}
+   737→      {showVision && <VisionSection />}
+   738→
+   739→      {/* ---- Footer ---- */}
+   740→      <StatusFooter />
+   741→    </div>
+   742→  );
+   743→}
+   744→
+   745→
+   746→
