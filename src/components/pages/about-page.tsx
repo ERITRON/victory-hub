@@ -1,6 +1,7 @@
 /*
  * Victory Hub - About Page
- * Branding, mission, features, tech stack, credits
+ * Branding, mission, features, tech stack, credits,
+ * and the honest ProjectStatus transparency section
  */
 
 'use client';
@@ -9,11 +10,14 @@ import { motion } from 'framer-motion';
 import {
   GraduationCap, BookOpen, WifiOff, Award, Bot,
   Sparkles, Heart, Code, ExternalLink, Users,
+  ChevronRight,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { useAppStore } from '@/store/app-store';
+import ProjectStatus from '@/components/ProjectStatus';
 
 /* ------------------------------------------------------------------
    Animation variants
@@ -52,8 +56,8 @@ const FEATURES = [
   },
   {
     icon: Bot,
-    title: 'AI Powered',
-    desc: 'Built-in AI study assistant to answer questions, explain concepts, and generate practice problems.',
+    title: 'Study Assistant',
+    desc: 'Built-in study assistant to answer questions, explain concepts, and provide study guidance.',
     color: 'from-violet-500 to-purple-500',
   },
 ];
@@ -102,7 +106,7 @@ export function AboutPage() {
           </h1>
 
           <p className="mt-4 text-lg md:text-xl text-white/90">
-            Your complete, offline-first learning companion designed to help students achieve academic excellence.
+            A personal study tool built for Ethiopian Grade 12 students preparing for the national exam.
           </p>
 
           <div className="mt-6 flex items-center justify-center gap-3">
@@ -110,7 +114,7 @@ export function AboutPage() {
               v1.0.0
             </Badge>
             <Badge variant="secondary" className="border-0 bg-white/20 text-white hover:bg-white/30">
-              <Sparkles className="mr-1 h-3 w-3" /> Open Source
+              <Sparkles className="mr-1 h-3 w-3" /> Student Project
             </Badge>
           </div>
         </div>
@@ -130,7 +134,9 @@ export function AboutPage() {
             </div>
             <h2 className="text-2xl font-bold mb-3">Our Mission</h2>
             <p className="max-w-xl mx-auto text-muted-foreground leading-relaxed">
-              We believe every student deserves access to quality educational tools — regardless of internet connectivity or financial resources. Victory Hub is built to empower learners with a beautiful, fast, and fully offline study platform that makes learning engaging and rewarding.
+              We believe every student deserves structured, effective study tools — regardless of internet connectivity or financial resources.
+              Victory Hub implements proven study methods like the &ldquo;Chapter Link&rdquo; and &ldquo;Pyramid&rdquo; methods specifically designed for the
+              Ethiopian national exam format.
             </p>
           </CardContent>
         </Card>
@@ -164,9 +170,7 @@ export function AboutPage() {
               >
                 <Card className="group relative overflow-hidden border-0 bg-card/60 backdrop-blur-xl hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full">
                   <CardContent className="p-6">
-                    <div
-                      className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${f.color} text-white shadow-lg`}
-                    >
+                    <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${f.color} text-white shadow-lg`}>
                       <Icon className="h-6 w-6" />
                     </div>
                     <h3 className="text-lg font-semibold mb-2">{f.title}</h3>
@@ -209,7 +213,31 @@ export function AboutPage() {
         </Card>
       </motion.section>
 
-      {/* ===== Credits / Acknowledgments ===== */}
+      {/* ===== Divider ===== */}
+      <Separator />
+
+      {/* ===== Honest Project Status ===== */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="mb-6 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold">
+            Honest{' '}
+            <span className="bg-gradient-to-r from-blue-500 via-amber-500 to-emerald-500 bg-clip-text text-transparent">
+              Project Status
+            </span>
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            What this tool does, what it doesn&apos;t, and where it&apos;s headed
+          </p>
+        </div>
+        <ProjectStatus showLimitations={true} showVision={true} />
+      </motion.div>
+
+      {/* ===== Credits / Navigation ===== */}
       <motion.section
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -223,7 +251,7 @@ export function AboutPage() {
             </div>
             <h2 className="text-xl font-bold mb-3">Credits</h2>
             <p className="max-w-lg mx-auto text-sm text-muted-foreground leading-relaxed mb-6">
-              Victory Hub is made with care for students everywhere. Thank you to the open-source community and all the educators who inspire us to build better learning tools.
+              Victory Hub is made with care for Ethiopian students everywhere. Thank you to the open-source community and all the educators who inspire better learning tools.
             </p>
 
             <div className="flex items-center justify-center gap-4">
@@ -245,12 +273,12 @@ export function AboutPage() {
         </Card>
       </motion.section>
 
-      {/* ===== Footer ===== */}
+      {/* ===== App Footer ===== */}
       <footer className="border-t border-border pt-6 pb-4 text-center text-xs text-muted-foreground">
         <p>
           Victory Hub v1.0.0 &middot; Built with{' '}
           <Heart className="inline h-3 w-3 text-rose-500" />{' '}
-          for students &middot; &copy; {new Date().getFullYear()} All rights reserved.
+          by a Grade 11 Student &middot; &copy; {new Date().getFullYear()} All rights reserved.
         </p>
       </footer>
     </div>
