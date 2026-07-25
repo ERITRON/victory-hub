@@ -113,6 +113,16 @@ export interface ChatMessage {
   timestamp: number;
 }
 
+export interface Book {
+  id: string;
+  title: string;
+  author: string;
+  subjectId: string;
+  chapters: number;
+  notes: string;
+  addedAt: number;
+}
+
 /* ------------------------------------------------------------------
    Achievements definition
    ------------------------------------------------------------------ */
@@ -208,6 +218,9 @@ interface AppState {
   /* Recent activity */
   recentActivity: { action: string; detail: string; timestamp: number }[];
 
+  /* Books */
+  books: Book[];
+
   /* ===== Actions ===== */
   navigate: (page: PageId) => void;
   goBack: () => void;
@@ -219,6 +232,12 @@ interface AppState {
   toggleLesson: (lessonId: string) => void;
   toggleBookmark: (subjectId: string, lessonId: string) => void;
   getSubjectProgress: (subjectId: string) => number;
+  addSubject: (subject: Omit<Subject, 'id' | 'progress' | 'bookmarks'>) => void;
+  deleteSubject: (id: string) => void;
+
+  /* Book actions */
+  addBook: (book: Omit<Book, 'id' | 'addedAt'>) => void;
+  deleteBook: (id: string) => void;
 
   /* Flashcard actions */
   addFlashcard: (front: string, back: string, category: string) => void;
@@ -283,6 +302,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   settings: getStorage<AppSettings>('settings', DEFAULT_SETTINGS),
   chatMessages: getStorage<ChatMessage[]>('chatMessages', []),
   recentActivity: getStorage<{ action: string; detail: string; timestamp: number }[]>('recentActivity', []),
+  books: getStorage<Book[]>('books', []),
 
   /* ===== Navigation ===== */
   navigate: (page) => {
@@ -334,6 +354,44 @@ export const useAppStore = create<AppState>((set, get) => ({
       0
     );
     return total > 0 ? Math.round((completed / total) * 100) : 0;
+  },
+
+  addSubject: (subject) => {
+    const newSubject: Subject = {
+      ...subject,
+      id: `subj-${Date.now()}`,
+      progress: 0,
+      bookmarks: [],
+    };
+    const updated = [...get().subjects, newSubject];
+    set({ subjects: updated });
+    setStorage('subjects', updated);
+    get().addActivity('Added subject', subject.name);
+  },
+
+  deleteSubject: (id) => {
+    const updated = get().subjects.filter((s) => s.id !== id);
+    set({ subjects: updated });
+    setStorage('subjects', updated);
+    /* Also remove books linked to this subject */
+    const booksUpdated = get().books.filter((b) => b.subjectId !== id);
+    set({ books: booksUpdated });
+    setStorage('books', booksUpdated);
+    get().addActivity('Deleted subject', id);
+  },
+
+  addBook: (book) => {
+    const newBook: Book = { ...book, id: `book-${Date.now()}`, addedAt: Date.now() };
+    const updated = [...get().books, newBook];
+    set({ books: updated });
+    setStorage('books', updated);
+    get().addActivity('Added book', book.title);
+  },
+
+  deleteBook: (id) => {
+    const updated = get().books.filter((b) => b.id !== id);
+    set({ books: updated });
+    setStorage('books', updated);
   },
 
   /* ===== Flashcard Actions ===== */
@@ -507,6 +565,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       settings: DEFAULT_SETTINGS,
       chatMessages: [],
       recentActivity: [],
+      books: [],
     });
   },
 

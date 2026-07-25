@@ -84,26 +84,26 @@ Stage Summary:
 - Produced profile-page.tsx and settings-page.tsx
 
 ---
-Task ID: 5
+Task ID: 6
 Agent: Main Orchestrator
-Task: Fix ProjectStatus.tsx parse error and verify full application
+Task: Add ability to add/delete subjects and books
 
 Work Log:
-- Identified existing ProjectStatus.tsx had a parse error at line 346 (likely encoding/hidden character issue)
-- Rewrote the entire component cleanly (~310 lines) preserving all content and design
-- Used proper TypeScript props interface (showLimitations, showVision, className)
-- Used `as const` for framer-motion ease values
-- Used `&apos;` instead of HTML entities for JSX compatibility
-- Verified dev server returns HTTP 200 after fix
-- Verified `bun run lint` passes with zero errors
-- Verified all 14 page components exist
-- Browser-verified: Home page renders fully (hero, features, stats, testimonials, FAQ, footer)
-- Browser-verified: About page renders with all 4 ProjectStatus sections:
-  - Problem (5 cards), What Works (7 features with "Working" badges),
-  - Limitations (7 items with severity badges), Future Vision (7 planned features)
-  - Status footer with "Built with ❤ by a Grade 11 Student"
-- Zero console errors on both pages
+- Added Book interface to store (id, title, author, subjectId, chapters, notes, addedAt)
+- Added books state, books localStorage persistence, books reset in resetAllData
+- Added store actions: addSubject, deleteSubject, addBook, deleteBook
+- deleteSubject also cascades to remove linked books
+- Rewrote subjects-page.tsx with:
+  - Tabs: "Subjects (N)" and "Books (N)" tab switcher
+  - Subjects tab: grid/list view toggle, Add Subject button with Dialog (name, description, color picker), delete button on each card with AlertDialog confirmation
+  - Books tab: list of books with subject badge, Add Book button with Dialog (title, author, subject Select, chapters, notes), delete button with AlertDialog confirmation
+  - All dialogs use shadcn Dialog and AlertDialog components
+  - Animations with framer-motion (fadeUp, stagger, AnimatePresence)
+- Fixed JSX nesting issue: dialogs placed as Fragment siblings before the main motion.div
+- Browser verified: Subjects (10) count increases on add, delete confirmation dialog works, Books tab shows empty state, Add Book dialog opens with subject dropdown
 
 Stage Summary:
-- Fixed /home/z/my-project/src/components/ProjectStatus.tsx (rewrote to fix parse error)
-- Full application verified working: 14 pages, 0 lint errors, 0 console errors
+- Updated /home/z/my-project/src/store/app-store.ts (Book type, 4 new actions)
+- Rewrote /home/z/my-project/src/components/pages/subjects-page.tsx (~440 lines)
+- Zero lint errors, zero console errors, dev server returns 200
+- Browser-verified: Add Subject dialog, color picker, subject creation, delete confirmation, Books tab, Add Book dialog
