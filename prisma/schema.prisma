@@ -9,16 +9,28 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
+  password  String
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  appData   AppData?
+}
+
+/// Stores the entire syncable app state for a user as a single JSON blob,
+/// mirroring what used to live only in browser localStorage.
+model AppData {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  data      String
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Post {

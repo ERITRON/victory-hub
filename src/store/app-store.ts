@@ -277,7 +277,43 @@ interface AppState {
 
   /* Achievement checking */
   checkAchievements: () => void;
+
+  /* Internal */
+  addActivity: (action: string, detail: string) => void;
+
+  /* Cloud sync */
+  lastSyncedAt: number | null;
+  hydrateFromCloud: (data: Partial<SyncableState>) => void;
 }
+
+/**
+ * The slice of AppState that gets synced to the cloud for signed-in users.
+ * Keep this list in sync with what CloudSyncProvider reads/writes.
+ */
+export interface SyncableState {
+  subjects: Subject[];
+  flashcards: Flashcard[];
+  notes: Note[];
+  noteFolders: string[];
+  plannerTasks: PlannerTask[];
+  quizScores: QuizScore[];
+  achievements: Achievement[];
+  studySessions: StudySession[];
+  dailyGoal: DailyGoal;
+  currentStreak: number;
+  lastStudyDate: string | null;
+  profile: UserProfile;
+  settings: AppSettings;
+  chatMessages: ChatMessage[];
+  recentActivity: { action: string; detail: string; timestamp: number }[];
+  books: Book[];
+}
+
+export const SYNC_KEYS: (keyof SyncableState)[] = [
+  'subjects', 'flashcards', 'notes', 'noteFolders', 'plannerTasks', 'quizScores',
+  'achievements', 'studySessions', 'dailyGoal', 'currentStreak', 'lastStudyDate',
+  'profile', 'settings', 'chatMessages', 'recentActivity', 'books',
+];
 
 export const useAppStore = create<AppState>((set, get) => ({
   /* --- Initial state loaded from localStorage --- */
@@ -303,6 +339,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   chatMessages: getStorage<ChatMessage[]>('chatMessages', []),
   recentActivity: getStorage<{ action: string; detail: string; timestamp: number }[]>('recentActivity', []),
   books: getStorage<Book[]>('books', []),
+  lastSyncedAt: null,
 
   /* ===== Navigation ===== */
   navigate: (page) => {
@@ -621,13 +658,19 @@ export const useAppStore = create<AppState>((set, get) => ({
           unlocked = state.studySessions.reduce((sum, s) => sum + s.minutes, 0) >= 6000;
           break;
         case 'complete_mathematics':
-          unlocked = state.getSubjectProgress('mathematics') === 100;
+          unlocked = state.subjects
+            .filter((s) => s.id.endsWith('-mathematics'))
+            .every((s) => state.getSubjectProgress(s.id) === 100);
           break;
         case 'complete_biology':
-          unlocked = state.getSubjectProgress('biology') === 100;
+          unlocked = state.subjects
+            .filter((s) => s.id.endsWith('-biology'))
+            .every((s) => state.getSubjectProgress(s.id) === 100);
           break;
         case 'complete_physics':
-          unlocked = state.getSubjectProgress('physics') === 100;
+          unlocked = state.subjects
+            .filter((s) => s.id.endsWith('-physics'))
+            .every((s) => state.getSubjectProgress(s.id) === 100);
           break;
         case 'quizzes_10':
           unlocked = state.quizScores.length >= 10;
@@ -659,5 +702,18 @@ export const useAppStore = create<AppState>((set, get) => ({
     });
     set({ achievements: updated });
     setStorage('achievements', updated);
+  },
+
+  /* ===== Cloud Sync ===== */
+  hydrateFromCloud: (data) => {
+    /* Merge only the keys that were actually returned, then mirror them
+       into localStorage so the offline/local cache stays consistent. */
+    set(data as Partial<AppState>);
+    for (const key of SYNC_KEYS) {
+      if (key in data) {
+        setStorage(key, (data as Record<string, unknown>)[key]);
+      }
+    }
+    set({ lastSyncedAt: Date.now() });
   },
 }));

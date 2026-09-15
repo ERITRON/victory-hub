@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/select';
 import { useAppStore } from '@/store/app-store';
 import { ProgressRing } from '@/components/shared/progress-ring';
+import { GRADES } from '@/data/subjects-data';
 
 /* ------------------------------------------------------------------
    Icon mapping
@@ -72,6 +73,7 @@ export function SubjectsPage() {
   const [search, setSearch] = useState('');
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [activeTab, setActiveTab] = useState('subjects');
+  const [activeGrade, setActiveGrade] = useState<number>(GRADES[0]);
 
   /* ---- Add Subject Dialog ---- */
   const [showAddSubject, setShowAddSubject] = useState(false);
@@ -95,10 +97,11 @@ export function SubjectsPage() {
   const [deleteBookTarget, setDeleteBookTarget] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
-    if (!search) return subjects;
+    const byGrade = subjects.filter((s) => s.grade === activeGrade);
+    if (!search) return byGrade;
     const q = search.toLowerCase();
-    return subjects.filter((s) => s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q));
-  }, [subjects, search]);
+    return byGrade.filter((s) => s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q));
+  }, [subjects, search, activeGrade]);
 
   const filteredBooks = useMemo(() => {
     if (!search) return books;
@@ -111,6 +114,7 @@ export function SubjectsPage() {
   const handleAddSubject = () => {
     if (!newName.trim()) return;
     addSubject({
+      grade: activeGrade,
       name: newName.trim(),
       icon: newIcon,
       color: '#f59e0b',
@@ -143,7 +147,7 @@ export function SubjectsPage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Add New Subject</DialogTitle>
-            <DialogDescription>Create a custom subject to track your studies.</DialogDescription>
+            <DialogDescription>Create a custom subject to track your studies. It will be added under Grade {activeGrade}.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
@@ -215,7 +219,7 @@ export function SubjectsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {subjects.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                    <SelectItem key={s.id} value={s.id}>Grade {s.grade} - {s.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -259,7 +263,7 @@ export function SubjectsPage() {
           <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
             <TabsList className="rounded-xl">
               <TabsTrigger value="subjects" className="rounded-lg gap-1.5">
-                <BookOpen className="h-4 w-4" /> Subjects ({subjects.length})
+                <BookOpen className="h-4 w-4" /> Subjects ({filtered.length})
               </TabsTrigger>
               <TabsTrigger value="books" className="rounded-lg gap-1.5">
                 <Library className="h-4 w-4" /> Books ({books.length})
@@ -285,6 +289,22 @@ export function SubjectsPage() {
 
           {/* ====== SUBJECTS TAB ====== */}
           <TabsContent value="subjects" className="mt-6">
+            {/* Grade selector */}
+            <div className="flex gap-2 mb-5 flex-wrap">
+              {GRADES.map((g) => (
+                <button
+                  key={g}
+                  onClick={() => setActiveGrade(g)}
+                  className={`rounded-xl px-4 py-2 text-sm font-medium transition-colors ${
+                    activeGrade === g
+                      ? 'bg-foreground text-background'
+                      : 'bg-muted/60 text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  Grade {g}
+                </button>
+              ))}
+            </div>
             <div className={view === 'grid' ? 'grid gap-6 sm:grid-cols-2 xl:grid-cols-3' : 'space-y-4'}>
               <AnimatePresence>
                 {filtered.map((subject, idx) => {
@@ -343,12 +363,19 @@ export function SubjectsPage() {
                                         const TypeIcon = TYPE_ICONS[lesson.type] || FileText;
                                         const isBookmarked = subject.bookmarks.includes(lesson.id);
                                         return (
-                                          <div key={lesson.id} className="flex items-center gap-2 rounded-lg bg-muted/40 px-2.5 py-2 group">
-                                            <Checkbox checked={lesson.completed} onCheckedChange={() => toggleLesson(lesson.id)} className="shrink-0" />
-                                            <TypeIcon className={`h-3.5 w-3.5 shrink-0 ${lesson.completed ? 'text-emerald-500' : 'text-muted-foreground'}`} />
-                                            <span className={`text-xs flex-1 truncate ${lesson.completed ? 'line-through text-muted-foreground' : ''}`}>{lesson.title}</span>
-                                            <span className="text-[10px] text-muted-foreground shrink-0 hidden sm:inline">{lesson.duration}</span>
-                                            <button onClick={() => toggleBookmark(subject.id, lesson.id)} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                          <div key={lesson.id} className="flex items-start gap-2 rounded-lg bg-muted/40 px-2.5 py-2 group">
+                                            <Checkbox checked={lesson.completed} onCheckedChange={() => toggleLesson(lesson.id)} className="shrink-0 mt-0.5" />
+                                            <TypeIcon className={`h-3.5 w-3.5 shrink-0 mt-0.5 ${lesson.completed ? 'text-emerald-500' : 'text-muted-foreground'}`} />
+                                            <div className="flex-1 min-w-0">
+                                              <div className="flex items-center gap-2">
+                                                <span className={`text-xs font-medium truncate ${lesson.completed ? 'line-through text-muted-foreground' : ''}`}>{lesson.title}</span>
+                                                <span className="text-[10px] text-muted-foreground shrink-0 hidden sm:inline">{lesson.duration}</span>
+                                              </div>
+                                              {lesson.summary && (
+                                                <p className="text-[11px] text-muted-foreground/80 mt-0.5 leading-snug">{lesson.summary}</p>
+                                              )}
+                                            </div>
+                                            <button onClick={() => toggleBookmark(subject.id, lesson.id)} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5">
                                               {isBookmarked ? <BookmarkCheck className="h-3.5 w-3.5 text-amber-500 fill-amber-500" /> : <Bookmark className="h-3.5 w-3.5 text-muted-foreground" />}
                                             </button>
                                           </div>

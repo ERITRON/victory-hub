@@ -126,10 +126,14 @@ export function QuizPage() {
     [quizScores]
   );
 
-  /* Subject options */
+  /* Subject options - dedupe across grades (e.g. g9-biology, g10-biology -> biology) */
   const subjectOptions = [
     { value: 'all', label: 'All Subjects' },
-    ...subjects.map((s) => ({ value: s.id, label: s.name })),
+    ...Array.from(
+      new Map(
+        subjects.map((s) => [s.id.replace(/^g\d+-/, ''), s.name])
+      ).entries()
+    ).map(([value, label]) => ({ value, label })),
   ];
 
   /* ==================================================================

@@ -12,6 +12,7 @@ import { useTheme } from 'next-themes';
 import { Sidebar } from './sidebar';
 import { BackToTop } from '@/components/shared/back-to-top';
 import { LoadingScreen } from '@/components/shared/loading-screen';
+import { AuthMenu } from '@/components/shared/auth-menu';
 import { useAppStore, type PageId } from '@/store/app-store';
 
 /* ------------------------------------------------------------------
@@ -174,6 +175,9 @@ function Header() {
           <Bell className="h-5 w-5" />
           <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-orange-500" />
         </button>
+
+        {/* Account / cloud sync */}
+        <AuthMenu />
       </div>
     </header>
   );
