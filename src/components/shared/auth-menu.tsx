@@ -9,7 +9,7 @@
 import { useState } from 'react';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
-import { CloudCheck, LogIn, LogOut, Loader2, CloudOff } from 'lucide-react';
+import { CloudCheck, Eye, EyeOff, LogIn, LogOut, Loader2, CloudOff } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -42,6 +42,7 @@ function AuthDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
   /* Sign in fields */
   const [signInEmail, setSignInEmail] = useState('');
   const [signInPassword, setSignInPassword] = useState('');
+  const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [signInLoading, setSignInLoading] = useState(false);
   const [signInError, setSignInError] = useState('');
 
@@ -49,6 +50,9 @@ function AuthDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [signUpLoading, setSignUpLoading] = useState(false);
   const [signUpError, setSignUpError] = useState('');
 
@@ -80,6 +84,10 @@ function AuthDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setSignUpError('');
+    if (password !== confirmPassword) {
+      setSignUpError('Passwords do not match');
+      return;
+    }
     setSignUpLoading(true);
     try {
       const res = await fetch('/api/register', {
@@ -108,6 +116,9 @@ function AuthDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
       setName('');
       setEmail('');
       setPassword('');
+      setConfirmPassword('');
+      setShowSignUpPassword(false);
+      setShowConfirmPassword(false);
     } catch {
       setSignUpError('Something went wrong. Please try again.');
     } finally {
@@ -145,13 +156,24 @@ function AuthDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">Password</label>
-                <Input
-                  type="password"
-                  required
-                  value={signInPassword}
-                  onChange={(e) => setSignInPassword(e.target.value)}
-                  placeholder="••••••••"
-                />
+                <div className="relative">
+                  <Input
+                    type={showSignInPassword ? 'text' : 'password'}
+                    required
+                    value={signInPassword}
+                    onChange={(e) => setSignInPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSignInPassword((visible) => !visible)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={showSignInPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showSignInPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
               {signInError && <p className="text-sm text-destructive">{signInError}</p>}
               <Button type="submit" className="w-full rounded-xl" disabled={signInLoading}>
@@ -178,14 +200,47 @@ function AuthDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: b
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">Password</label>
-                <Input
-                  type="password"
-                  required
-                  minLength={6}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 6 characters"
-                />
+                <div className="relative">
+                  <Input
+                    type={showSignUpPassword ? 'text' : 'password'}
+                    required
+                    minLength={6}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="At least 6 characters"
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSignUpPassword((visible) => !visible)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={showSignUpPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showSignUpPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Confirm password</label>
+                <div className="relative">
+                  <Input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    required
+                    minLength={6}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Re-enter your password"
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((visible) => !visible)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={showConfirmPassword ? 'Hide confirmation password' : 'Show confirmation password'}
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
               {signUpError && <p className="text-sm text-destructive">{signUpError}</p>}
               <Button type="submit" className="w-full rounded-xl" disabled={signUpLoading}>
